@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maison Celeste — Boutique Hotel Website
 
-## Getting Started
+> Where the mountains remember you.
 
-First, run the development server:
+🌐 **Live Site:** [maison-celeste.vercel.app](https://maison-celeste.vercel.app/)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## About
+
+Maison Celeste is a fictional luxury boutique hotel website built as a 
+portfolio showcase project for Stackwork. Set in Courchevel 1550 in the 
+French Alps, it demonstrates a fully cinematic web experience with real 
+booking functionality, a Supabase backend, and a protected owner admin 
+dashboard. This is the most technically and visually complex project in 
+the Stackwork portfolio.
+
+---
+
+## Pages
+
+- **Home** — Cinematic hero with GSAP text reveal, marquee strip, rooms 
+showcase, experiences, testimonials
+- **Rooms** — All 14 rooms with availability status, pricing, and 
+category filters
+- **Room Detail** — Image gallery with lightbox, amenities, availability 
+calendar, and booking form
+- **Experiences** — Hotel amenities and curated guest experiences
+- **Gallery** — Full immersive photo gallery
+- **About** — Lodge history and story
+- **Contact** — Inquiry form with OpenStreetMap embed
+- **Admin Dashboard (/admin)** — Protected dashboard for owner to manage 
+bookings and room availability
+
+---
+
+## Key Features
+
+- Real booking system writing to Supabase database
+- Owner admin dashboard with booking management and room toggle
+- GSAP scroll-triggered cinematic animations throughout
+- Lenis ultra-smooth custom scroll
+- Grain texture overlay on atmospheric sections
+- Dynamic room detail pages with availability calendar
+- Fully responsive across mobile, tablet, and desktop
+
+---
+
+## Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js 14 | Framework and dynamic routing |
+| Tailwind CSS v4 | Styling |
+| GSAP | Scroll-triggered animations |
+| Lenis | Smooth scroll |
+| Supabase | Database for rooms and bookings |
+| Unsplash | Photography |
+| Vercel | Deployment |
+
+---
+
+## Database Setup
+
+Two Supabase tables required — rooms and bookings.
+See `/supabase/schema.sql` in the repo for the exact SQL to create both 
+tables and seed initial room data.
+
+---
+
+## Environment Variables
+
+Create a `.env.local` file with:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running Locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+git clone https://github.com/AftabAhmed-max/maison-celeste.git
+cd maison-celeste
+npm install
+npm run dev
+```
 
-## Learn More
+Open http://localhost:3000 in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Part of Stackwork Portfolio
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is a demo built by 
+**[Stackwork](https://stackwork.netlify.app/)** — a digital agency 
+serving businesses across India and the Gulf.
