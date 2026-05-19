@@ -11,11 +11,14 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const init = async () => {
       const gsap = (await import('gsap')).default
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+      gsap.registerPlugin(ScrollTrigger)
       gsap.fromTo('.page-hero-title', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.2 })
       gsap.utils.toArray('.contact-reveal').forEach((el: any) => {
         gsap.fromTo(el, { y: 40, opacity: 0 }, {
@@ -30,15 +33,20 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
+    setError('')
     try {
-      await fetch('/api/send-contact', {
+      const res = await fetch('/api/send-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-    } catch {}
-    setSubmitting(false)
-    setSubmitted(true)
+      if (!res.ok) throw new Error('send failed')
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Please try again or email us directly.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -154,6 +162,7 @@ export default function ContactPage() {
                       <label className="mc-label">Message</label>
                       <textarea required className="mc-input" rows={5} placeholder="Tell us what you have in mind — dates, room preferences, special occasions..." value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} style={{ resize: 'vertical', minHeight: '120px' }} />
                     </div>
+                    {error && <p style={{ fontSize: '13px', color: '#ff9999' }}>{error}</p>}
                     <button type="submit" className="btn-primary" disabled={submitting} style={{ width: '100%', justifyContent: 'center', marginTop: '8px', opacity: submitting ? 0.7 : 1 }}>
                       {submitting ? 'Sending...' : 'Send Message'}
                     </button>

@@ -6,6 +6,15 @@ import { Resend } from 'resend'
 const OWNER_EMAIL = process.env.OWNER_EMAIL || 'owner@maisonceleste.com'
 const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev'
 
+function escHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function detailRow(label: string, value: string) {
   return `<tr>
     <td style="padding:11px 0;border-bottom:1px solid rgba(245,239,224,0.07);font-size:13px;color:rgba(245,239,224,0.45);width:40%;vertical-align:top;">${label}</td>
@@ -66,27 +75,27 @@ export async function POST(req: NextRequest) {
     const nights = Math.round((new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / (1000 * 60 * 60 * 24))
 
     const guestRows = [
-      detailRow('Room', booking.room_name),
+      detailRow('Room', escHtml(booking.room_name)),
       detailRow('Check-in', formatDate(booking.check_in)),
       detailRow('Check-out', formatDate(booking.check_out)),
       detailRow('Duration', `${nights} night${nights > 1 ? 's' : ''}`),
       detailRow('Guests', `${booking.guests} guest${booking.guests > 1 ? 's' : ''}`),
       detailRow('Total Paid', `€${Number(booking.total_price).toLocaleString()}`),
-      detailRow('Payment ID', razorpay_payment_id),
-      ...(booking.special_requests ? [detailRow('Special Requests', booking.special_requests)] : []),
+      detailRow('Payment ID', escHtml(razorpay_payment_id)),
+      ...(booking.special_requests ? [detailRow('Special Requests', escHtml(booking.special_requests))] : []),
     ].join('')
 
     const ownerRows = [
-      ownerRow('Guest Name', booking.guest_name),
-      ownerRow('Email', booking.guest_email),
-      ownerRow('Room', booking.room_name),
+      ownerRow('Guest Name', escHtml(booking.guest_name)),
+      ownerRow('Email', escHtml(booking.guest_email)),
+      ownerRow('Room', escHtml(booking.room_name)),
       ownerRow('Check-in', formatDate(booking.check_in)),
       ownerRow('Check-out', formatDate(booking.check_out)),
       ownerRow('Duration', `${nights} night${nights > 1 ? 's' : ''}`),
       ownerRow('Guests', `${booking.guests} guest${booking.guests > 1 ? 's' : ''}`),
       ownerRow('Total Paid', `€${Number(booking.total_price).toLocaleString()}`),
-      ownerRow('Payment ID', razorpay_payment_id),
-      ...(booking.special_requests ? [ownerRow('Special Requests', booking.special_requests)] : []),
+      ownerRow('Payment ID', escHtml(razorpay_payment_id)),
+      ...(booking.special_requests ? [ownerRow('Special Requests', escHtml(booking.special_requests))] : []),
     ].join('')
 
     await Promise.all([
@@ -105,7 +114,7 @@ export async function POST(req: NextRequest) {
         <h1 style="margin:0;font-size:26px;font-weight:300;color:#F5EFE0;font-family:Georgia,serif;">Booking & Payment Confirmed</h1>
       </td></tr>
       <tr><td style="padding:40px 48px 0;">
-        <p style="margin:0 0 16px;font-size:16px;color:#F5EFE0;">Dear ${booking.guest_name},</p>
+        <p style="margin:0 0 16px;font-size:16px;color:#F5EFE0;">Dear ${escHtml(booking.guest_name)},</p>
         <p style="margin:0 0 36px;font-size:15px;color:rgba(245,239,224,0.65);line-height:1.8;">Your payment has been received and your reservation is confirmed. We look forward to welcoming you to the Alps.</p>
       </td></tr>
       <tr><td style="padding:0 48px;">
@@ -141,7 +150,7 @@ export async function POST(req: NextRequest) {
   <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB;">
     <tr><td style="background:#2C6E49;padding:24px 32px;">
       <p style="margin:0 0 4px;font-size:11px;color:rgba(255,255,255,0.65);letter-spacing:0.12em;text-transform:uppercase;">Payment Received</p>
-      <h2 style="margin:0;font-size:22px;color:#fff;font-weight:600;">${booking.room_name}</h2>
+      <h2 style="margin:0;font-size:22px;color:#fff;font-weight:600;">${escHtml(booking.room_name)}</h2>
     </td></tr>
     <tr><td style="padding:28px 32px 8px;">
       <table width="100%" cellpadding="0" cellspacing="0">${ownerRows}</table>

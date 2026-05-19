@@ -16,7 +16,7 @@ function AvailabilityCalendar({ bookedDates }: { bookedDates: string[] }) {
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
-  const firstDay = new Date(year, month, 1).getDay()
+  const firstDay = (new Date(year, month, 1).getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const monthName = currentMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
@@ -37,7 +37,7 @@ function AvailabilityCalendar({ bookedDates }: { bookedDates: string[] }) {
         <button onClick={() => setCurrentMonth(new Date(year, month + 1))} style={{ background: 'none', border: 'none', color: '#F5EFE0', cursor: 'pointer', padding: '4px' }}><ChevronRight size={16} /></button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '8px' }}>
-        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+        {['Mo','Tu','We','Th','Fr','Sa','Su'].map(d => (
           <div key={d} style={{ textAlign: 'center', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(245,239,224,0.3)', padding: '4px 0' }}>{d}</div>
         ))}
       </div>
@@ -62,10 +62,13 @@ function AvailabilityCalendar({ bookedDates }: { bookedDates: string[] }) {
   )
 }
 
-function GuestSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function GuestSelect({ value, onChange, maxGuests = 4 }: { value: string; onChange: (v: string) => void; maxGuests?: number }) {
   const [open, setOpen] = useState(false)
-  const options = ['', '1', '2', '3', '4']
-  const labels: Record<string, string> = { '': 'Number of Guests', '1': '1 Guest', '2': '2 Guests', '3': '3 Guests', '4': '4 Guests' }
+  const options = ['', ...Array.from({ length: maxGuests }, (_, i) => String(i + 1))]
+  const labels: Record<string, string> = {
+    '': 'Number of Guests',
+    ...Object.fromEntries(Array.from({ length: maxGuests }, (_, i) => [String(i + 1), `${i + 1} Guest${i + 1 > 1 ? 's' : ''}`])),
+  }
 
   return (
     <div className="custom-select-wrapper">
@@ -116,7 +119,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
 
   useEffect(() => {
     const fetchBookings = async () => {
-      const dates = await getBookedDatesForRoom(room.id)
+      const dates = await getBookedDatesForRoom(room.id, room.total_units)
       setBookedDates(dates)
     }
     fetchBookings()
@@ -147,17 +150,18 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
     if (!available) {
       setError('Sorry, this room is no longer available for your selected dates. Please choose different dates.')
       setSubmitting(false)
-      const dates = await getBookedDatesForRoom(room.id)
+      const dates = await getBookedDatesForRoom(room.id, room.total_units)
       setBookedDates(dates)
       return
     }
 
     // 2. Create Razorpay order server-side
+    const EUR_TO_INR = 90
     const orderRes = await fetch('/api/razorpay/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: totalPrice,
+        amount: Math.round(totalPrice * EUR_TO_INR),
         currency: 'INR',
         booking_meta: {
           room_name: room.name,
@@ -228,7 +232,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
         }
 
         setSubmitted(true)
-        const dates = await getBookedDatesForRoom(room.id)
+        const dates = await getBookedDatesForRoom(room.id, room.total_units)
         setBookedDates(dates)
       },
     }
@@ -255,7 +259,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
 
       {/* GALLERY HERO */}
       <div style={{ paddingTop: '80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '400px', gap: '4px' }}>
+        <div className="room-hero-grid">
           <div style={{ position: 'relative', gridRow: '1', cursor: 'pointer' }} onClick={() => { setLightboxIndex(0); setLightboxOpen(true) }}>
             <Image src={room.images[0]} alt={room.name} fill sizes="50vw" loading="eager" style={{ objectFit: 'cover' }} />
           </div>
@@ -276,7 +280,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
 
       {/* CONTENT */}
       <section style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(48px, 6vw, 80px) clamp(24px, 5vw, 80px) 120px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '80px', alignItems: 'start' }}>
+        <div className="room-content-grid">
 
           {/* LEFT: Info */}
           <div>
@@ -318,7 +322,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
           </div>
 
           {/* RIGHT: Booking form */}
-          <div style={{ position: 'sticky', top: '100px' }}>
+          <div className="room-booking-sticky" style={{ position: 'sticky', top: '100px' }}>
             <div style={{ background: '#161616', border: '1px solid rgba(184,147,90,0.2)', padding: '32px' }}>
               <div style={{ marginBottom: '28px', paddingBottom: '28px', borderBottom: '1px solid rgba(245,239,224,0.06)' }}>
                 <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '32px', color: '#B8935A', marginBottom: '4px' }}>
@@ -365,7 +369,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ slug: str
                     </div>
                     <div>
                       <label className="mc-label">Guests</label>
-                      <GuestSelect value={formData.guests} onChange={v => setFormData({ ...formData, guests: v })} />
+                      <GuestSelect value={formData.guests} onChange={v => setFormData({ ...formData, guests: v })} maxGuests={room.capacity} />
                     </div>
                     <div>
                       <label className="mc-label">Special Requests</label>

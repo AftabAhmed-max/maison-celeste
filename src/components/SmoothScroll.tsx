@@ -7,7 +7,8 @@ export default function SmoothScroll() {
     if (typeof window === 'undefined') return
 
     let lenis: any
-    
+    let rafId: number
+
     const initLenis = async () => {
       const Lenis = (await import('@studio-freight/lenis')).default
       lenis = new Lenis({
@@ -19,14 +20,15 @@ export default function SmoothScroll() {
 
       function raf(time: number) {
         lenis.raf(time)
-        requestAnimationFrame(raf)
+        rafId = requestAnimationFrame(raf)
       }
-      requestAnimationFrame(raf)
+      rafId = requestAnimationFrame(raf)
     }
 
     initLenis()
 
     return () => {
+      cancelAnimationFrame(rafId)
       if (lenis) lenis.destroy()
     }
   }, [])

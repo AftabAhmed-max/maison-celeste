@@ -96,11 +96,11 @@ export default function ExperiencesPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '120px' }}>
           {allExperiences.map((exp, i) => (
-            <div key={exp.title} className="exp-reveal" style={{ display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 1fr' : '1fr 1fr', direction: i % 2 === 0 ? 'ltr' : 'rtl', gap: 'clamp(48px, 6vw, 80px)', alignItems: 'center', opacity: 0 }}>
-              <div style={{ position: 'relative', height: 'clamp(300px, 40vw, 500px)', overflow: 'hidden' }}>
+            <div key={exp.title} className="exp-reveal" style={{ display: 'flex', flexDirection: i % 2 === 0 ? 'row' : 'row-reverse', flexWrap: 'wrap', gap: 'clamp(48px, 6vw, 80px)', alignItems: 'center', opacity: 0 }}>
+              <div style={{ position: 'relative', height: 'clamp(300px, 40vw, 500px)', overflow: 'hidden', flex: '1 1 300px' }}>
                 <Image src={exp.image} alt={exp.title} fill style={{ objectFit: 'cover' }} />
               </div>
-              <div style={{ direction: 'ltr' }}>
+              <div style={{ flex: '1 1 300px' }}>
                 <p className="section-label" style={{ marginBottom: '16px' }}>{exp.label}</p>
                 <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: 300, marginBottom: '24px' }}>{exp.title}</h2>
                 <div className="gold-divider" style={{ marginBottom: '24px' }} />

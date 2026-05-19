@@ -65,7 +65,7 @@ export async function isRoomAvailable(
   return booked < totalUnits
 }
 
-export async function getBookedDatesForRoom(roomId: string): Promise<string[]> {
+export async function getBookedDatesForRoom(roomId: string, totalUnits: number): Promise<string[]> {
   const { data } = await supabase
     .from('bookings')
     .select('check_in, check_out')
@@ -73,13 +73,16 @@ export async function getBookedDatesForRoom(roomId: string): Promise<string[]> {
     .neq('status', 'cancelled')
 
   if (!data) return []
-  const dates: string[] = []
+  const dateCounts: Record<string, number> = {}
   data.forEach(b => {
     const start = new Date(b.check_in)
     const end = new Date(b.check_out)
     for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-      dates.push(d.toISOString().split('T')[0])
+      const dateStr = d.toISOString().split('T')[0]
+      dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1
     }
   })
-  return dates
+  return Object.entries(dateCounts)
+    .filter(([, count]) => count >= totalUnits)
+    .map(([date]) => date)
 }

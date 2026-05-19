@@ -38,18 +38,20 @@ export default function GalleryPage() {
     if (typeof window === 'undefined') return
     const init = async () => {
       const gsap = (await import('gsap')).default
-      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
-      gsap.registerPlugin(ScrollTrigger)
       gsap.fromTo('.page-hero-title', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.2 })
-      gsap.utils.toArray('.gal-item').forEach((el: any, i: number) => {
-        gsap.fromTo(el, { opacity: 0, scale: 0.97 }, {
-          opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out',
-          delay: (i % 3) * 0.08,
-          scrollTrigger: { trigger: el, start: 'top 88%' },
-        })
-      })
     }
     init()
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const fadeCards = async () => {
+      const gsap = (await import('gsap')).default
+      gsap.utils.toArray('.gal-item').forEach((el: any, i: number) => {
+        gsap.fromTo(el, { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out', delay: (i % 3) * 0.05 })
+      })
+    }
+    fadeCards()
   }, [activeCategory])
 
   useEffect(() => {

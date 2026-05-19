@@ -13,7 +13,6 @@ const categories = ['All', 'Deluxe Room', 'Suite', 'Penthouse Suite']
 
 export default function RoomsPage() {
   const [activeCategory, setActiveCategory] = useState('All')
-  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -23,14 +22,19 @@ export default function RoomsPage() {
       gsap.registerPlugin(ScrollTrigger)
       gsap.fromTo('.page-hero-title', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1.4, ease: 'power3.out', delay: 0.2 })
       gsap.fromTo('.page-hero-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: 'power2.out', delay: 0.6 })
-      gsap.utils.toArray('.room-reveal').forEach((el: any, i: number) => {
-        gsap.fromTo(el, { y: 50, opacity: 0 }, {
-          y: 0, opacity: 1, duration: 1, ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 85%' },
-        })
-      })
     }
     init()
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const fadeCards = async () => {
+      const gsap = (await import('gsap')).default
+      gsap.utils.toArray('.room-reveal').forEach((el: any, i: number) => {
+        gsap.fromTo(el, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: i * 0.05 })
+      })
+    }
+    fadeCards()
   }, [activeCategory])
 
   const filtered = activeCategory === 'All' ? rooms : rooms.filter(r => r.category === activeCategory)
@@ -89,9 +93,6 @@ export default function RoomsPage() {
                   <span style={{ background: 'rgba(14,14,14,0.75)', backdropFilter: 'blur(4px)', color: '#B8935A', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '5px 10px' }}>
                     {room.category}
                   </span>
-                  {!room.featured && false && (
-                    <span style={{ background: 'rgba(100,0,0,0.75)', color: '#ff9999', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 10px' }}>Unavailable</span>
-                  )}
                 </div>
                 <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', gap: '16px' }}>

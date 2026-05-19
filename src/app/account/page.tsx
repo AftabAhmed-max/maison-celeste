@@ -210,7 +210,7 @@ function AccountPanel() {
     if (!confirm('Are you sure you want to cancel this booking?')) return
     setCancellingId(id)
     await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' as any } : b))
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' as const } : b))
     setCancellingId(null)
   }
 

@@ -6,6 +6,15 @@ import { NextRequest, NextResponse } from 'next/server'
 const OWNER_EMAIL = process.env.OWNER_EMAIL || 'owner@maisonceleste.com'
 const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev'
 
+function escHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function row(label: string, value: string) {
   return `
     <tr>
@@ -36,14 +45,14 @@ export async function POST(req: NextRequest) {
       <!-- Header -->
       <tr><td style="background:#0D1B3E;padding:24px 32px;">
         <p style="margin:0 0 4px;font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;">Contact Enquiry</p>
-        <h2 style="margin:0;font-size:22px;color:#ffffff;font-weight:500;">${name}</h2>
+        <h2 style="margin:0;font-size:22px;color:#ffffff;font-weight:500;">${escHtml(name)}</h2>
       </td></tr>
 
       <!-- Contact Details -->
       <tr><td style="padding:28px 32px 8px;">
         <table width="100%" cellpadding="0" cellspacing="0">
-          ${row('Email', `<a href="mailto:${email}" style="color:#B8935A;text-decoration:none;">${email}</a>`)}
-          ${phone ? row('Phone', phone) : ''}
+          ${row('Email', `<a href="mailto:${escHtml(email)}" style="color:#B8935A;text-decoration:none;">${escHtml(email)}</a>`)}
+          ${phone ? row('Phone', escHtml(phone)) : ''}
         </table>
       </td></tr>
 
@@ -51,13 +60,13 @@ export async function POST(req: NextRequest) {
       <tr><td style="padding:0 32px 28px;">
         <p style="margin:0 0 10px;font-size:11px;color:#9CA3AF;letter-spacing:0.1em;text-transform:uppercase;">Message</p>
         <div style="background:#F9FAFB;border-radius:6px;padding:20px;border:1px solid #F3F4F6;">
-          <p style="margin:0;font-size:14px;color:#374151;line-height:1.8;">${message.replace(/\n/g, '<br>')}</p>
+          <p style="margin:0;font-size:14px;color:#374151;line-height:1.8;">${escHtml(message).replace(/\n/g, '<br>')}</p>
         </div>
       </td></tr>
 
       <!-- Footer note -->
       <tr><td style="padding:16px 32px 28px;border-top:1px solid #F3F4F6;">
-        <p style="margin:0;font-size:12px;color:#9CA3AF;">Reply directly to this email to respond to ${name}.</p>
+        <p style="margin:0;font-size:12px;color:#9CA3AF;">Reply directly to this email to respond to ${escHtml(name)}.</p>
       </td></tr>
 
     </table>

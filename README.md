@@ -70,11 +70,28 @@ tables and seed initial room data.
 
 ## Environment Variables
 
-Create a `.env.local` file with:
+Create a `.env.local` file with all of the following:
 
 ```env
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Resend (transactional email)
+RESEND_API_KEY=your_resend_api_key
+OWNER_EMAIL=your_email_address
+FROM_EMAIL=onboarding@resend.dev
+
+# Razorpay (payment gateway)
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
+
+# Admin dashboard
+ADMIN_PASSWORD=your_secure_admin_password
+
+# App URL (used in email templates)
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ---

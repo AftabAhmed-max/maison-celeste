@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MapPin, Phone, Mail, ExternalLink, Globe } from 'lucide-react'
+import { MapPin, Phone, Mail } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -71,15 +71,8 @@ export default function Footer() {
                 <p style={{ fontSize: '14px', color: 'rgba(245,239,224,0.5)' }}>From 15:00 / Until 12:00</p>
               </div>
               <div>
-                <p style={{ fontSize: '13px', color: '#B8935A', marginBottom: '4px', letterSpacing: '0.05em' }}>Follow</p>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <a href="#" style={{ color: 'rgba(245,239,224,0.4)', transition: 'color 0.3s' }}>
-                    <ExternalLink size={16} />
-                  </a>
-                  <a href="#" style={{ color: 'rgba(245,239,224,0.4)', transition: 'color 0.3s' }}>
-                    <Globe size={16} />
-                  </a>
-                </div>
+                <p style={{ fontSize: '13px', color: '#B8935A', marginBottom: '4px', letterSpacing: '0.05em' }}>Reservations</p>
+                <a href="mailto:hello@maisoncelestehotel.com" className="footer-link" style={{ fontSize: '14px' }}>hello@maisoncelestehotel.com</a>
               </div>
             </div>
           </div>
@@ -90,10 +83,9 @@ export default function Footer() {
           <p style={{ fontSize: '12px', color: 'rgba(245,239,224,0.25)' }}>
             © {new Date().getFullYear()} Maison Celeste. All rights reserved.
           </p>
-          <div style={{ display: 'flex', gap: '32px' }}>
-            <a href="#" className="footer-link" style={{ fontSize: '12px' }}>Privacy Policy</a>
-            <a href="#" className="footer-link" style={{ fontSize: '12px' }}>Terms</a>
-          </div>
+          <p style={{ fontSize: '12px', color: 'rgba(245,239,224,0.25)' }}>
+            <a href="/contact" className="footer-link" style={{ fontSize: '12px' }}>Contact</a>
+          </p>
         </div>
       </div>
     </footer>

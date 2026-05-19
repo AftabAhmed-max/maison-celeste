@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import type { Booking } from '@/lib/supabase'
 import { rooms as localRooms } from '@/data/rooms'
-import { LogOut, Calendar, CheckCircle, XCircle, RefreshCw, Home, TrendingUp, BedDouble, Users, ArrowUpRight } from 'lucide-react'
+import { LogOut, Calendar, XCircle, RefreshCw, Home, TrendingUp, BedDouble, Users, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 
-const ADMIN_PASSWORD = 'celeste2024'
 type Tab = 'bookings' | 'rooms' | 'revenue'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -30,31 +30,25 @@ function StatusBadge({ status }: { status: string }) {
 
 // ── Room Availability Timeline ────────────────────────────────────────────────
 function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings: Booking[] }) {
-  const days = 42 // 6 weeks
+  const days = 42
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Build array of next `days` dates
   const dates = Array.from({ length: days }, (_, i) => {
     const d = new Date(today)
     d.setDate(today.getDate() + i)
     return d
   })
 
-  // For each date, count how many confirmed bookings overlap
   const confirmedForRoom = bookings.filter(b => b.room_id === room.id && b.status === 'confirmed')
 
   function bookedUnitsOnDate(date: Date): number {
     return confirmedForRoom.filter(b => {
-      const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
-      const co = new Date(b.check_out); co.setHours(0,0,0,0)
+      const ci = new Date(b.check_in); ci.setHours(0, 0, 0, 0)
+      const co = new Date(b.check_out); co.setHours(0, 0, 0, 0)
       return date >= ci && date < co
     }).length
   }
-
-  // Group dates into weeks for grid display
-  const weeks: Date[][] = []
-  for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7))
 
   const getCellColor = (booked: number) => {
     if (booked === 0) return '#F0FDF4'
@@ -67,15 +61,13 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
     return '#991B1B'
   }
 
-  // Find upcoming fully-booked date ranges for summary
   const upcomingFull = dates.filter(d => bookedUnitsOnDate(d) >= room.total_units)
   const nextFullDate = upcomingFull[0]
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '24px', marginBottom: '16px' }}>
-      {/* Room header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-        <img src={room.images[0]} alt={room.name} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <Image src={room.images[0]} alt={room.name} width={56} height={56} style={{ objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: '11px', color: '#B8935A', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>{room.category}</p>
           <p style={{ fontWeight: 600, color: '#111827', fontSize: '15px', marginBottom: '2px' }}>{room.name}</p>
@@ -96,18 +88,15 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
         )}
       </div>
 
-      {/* Day labels */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '3px' }}>
-        {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
           <div key={d} style={{ textAlign: 'center', fontSize: '10px', color: '#9CA3AF', padding: '2px 0', letterSpacing: '0.05em' }}>{d}</div>
         ))}
       </div>
 
-      {/* Calendar grid — Mon-aligned */}
       {(() => {
-        // Build a Mon-aligned 6-week grid
         const startOfGrid = new Date(today)
-        const dow = today.getDay() // 0=Sun
+        const dow = today.getDay()
         const daysFromMon = (dow + 6) % 7
         startOfGrid.setDate(today.getDate() - daysFromMon)
 
@@ -138,9 +127,8 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
                     borderRadius: '4px',
                     background: isPast ? '#F9FAFB' : getCellColor(booked),
                     border: isToday ? '2px solid #B8935A' : '1px solid transparent',
-                    cursor: isCurrentMonth ? 'default' : 'default',
+                    cursor: 'default',
                     opacity: isPast ? 0.4 : 1,
-                    position: 'relative',
                   }}
                 >
                   <span style={{ fontSize: '11px', fontWeight: isToday ? 700 : 400, color: isPast ? '#9CA3AF' : getCellTextColor(booked) }}>
@@ -158,7 +146,6 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
         )
       })()}
 
-      {/* Legend */}
       <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
         {[
           { color: '#F0FDF4', label: 'Available', text: '#16A34A' },
@@ -172,7 +159,6 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
         ))}
       </div>
 
-      {/* Upcoming bookings list for this room */}
       {confirmedForRoom.filter(b => new Date(b.check_out) >= today).length > 0 && (
         <div style={{ marginTop: '16px', borderTop: '1px solid #F3F4F6', paddingTop: '14px' }}>
           <p style={{ fontSize: '11px', color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>Upcoming bookings</p>
@@ -182,7 +168,7 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
               .sort((a, b) => new Date(a.check_in).getTime() - new Date(b.check_in).getTime())
               .slice(0, 3)
               .map(b => (
-                <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', flexWrap: 'wrap', gap: '4px' }}>
                   <span style={{ color: '#374151', fontWeight: 500 }}>{b.guest_name}</span>
                   <span style={{ color: '#6B7280' }}>{fmt(b.check_in)} → {fmt(b.check_out)}</span>
                   <span style={{ color: '#B8935A', fontWeight: 500 }}>€{(b.total_price || 0).toLocaleString()}</span>
@@ -195,7 +181,7 @@ function RoomTimeline({ room, bookings }: { room: typeof localRooms[0]; bookings
   )
 }
 
-// ── Revenue Chart (pure CSS bar chart) ───────────────────────────────────────
+// ── Revenue Chart ─────────────────────────────────────────────────────────────
 function RevenueChart({ bookings }: { bookings: Booking[] }) {
   const months = useMemo(() => {
     const map: Record<string, number> = {}
@@ -203,7 +189,6 @@ function RevenueChart({ bookings }: { bookings: Booking[] }) {
       const key = new Date(b.check_in).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })
       map[key] = (map[key] || 0) + (b.total_price || 0)
     })
-    // Last 6 months
     const result = []
     for (let i = 5; i >= 0; i--) {
       const d = new Date()
@@ -223,7 +208,7 @@ function RevenueChart({ bookings }: { bookings: Booking[] }) {
         {months.map(m => (
           <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%', justifyContent: 'flex-end' }}>
             <span style={{ fontSize: '10px', color: '#9CA3AF' }}>
-              {m.value > 0 ? `€${m.value >= 1000 ? (m.value/1000).toFixed(1)+'k' : m.value}` : ''}
+              {m.value > 0 ? `€${m.value >= 1000 ? (m.value / 1000).toFixed(1) + 'k' : m.value}` : ''}
             </span>
             <div style={{ width: '100%', background: m.value > 0 ? '#B8935A' : '#F3F4F6', borderRadius: '3px 3px 0 0', height: `${Math.max((m.value / max) * 80, m.value > 0 ? 4 : 0)}px`, transition: 'height 0.5s ease', minHeight: '2px' }} />
             <span style={{ fontSize: '10px', color: '#9CA3AF', whiteSpace: 'nowrap' }}>{m.label}</span>
@@ -239,6 +224,7 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [loginLoading, setLoginLoading] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('bookings')
@@ -247,26 +233,48 @@ export default function AdminPage() {
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth())
   const [filterYear, setFilterYear] = useState(new Date().getFullYear())
 
+  // Check for existing session on mount
+  useEffect(() => {
+    fetch('/api/admin/check').then(r => { if (r.ok) setAuthed(true) })
+  }, [])
+
   const fetchData = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase.from('bookings').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('bookings')
+      .select('id, guest_name, guest_email, room_id, room_name, check_in, check_out, guests, status, total_price, payment_id, created_at')
+      .order('created_at', { ascending: false })
     if (data) setBookings(data as Booking[])
     setLoading(false)
   }, [])
 
   useEffect(() => { if (authed) fetchData() }, [authed, fetchData])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === ADMIN_PASSWORD) { setAuthed(true); setLoginError('') }
+    setLoginLoading(true)
+    setLoginError('')
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    })
+    setLoginLoading(false)
+    if (res.ok) { setAuthed(true) }
     else setLoginError('Incorrect password.')
+  }
+
+  const handleSignOut = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    setAuthed(false)
+    setPassword('')
   }
 
   const cancelBooking = async (id: string) => {
     if (!confirm('Cancel this booking?')) return
     setCancellingId(id)
     await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' as any } : b))
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' as const } : b))
     setCancellingId(null)
   }
 
@@ -301,11 +309,10 @@ export default function AdminPage() {
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required
               style={{ width: '100%', padding: '12px 16px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '15px', fontFamily: "'DM Sans', sans-serif", outline: 'none', marginBottom: '16px', boxSizing: 'border-box' }} />
             {loginError && <p style={{ fontSize: '13px', color: '#DC2626', marginBottom: '12px' }}>{loginError}</p>}
-            <button type="submit" style={{ width: '100%', padding: '12px', background: '#B8935A', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-              Sign In
+            <button type="submit" disabled={loginLoading} style={{ width: '100%', padding: '12px', background: '#B8935A', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, cursor: loginLoading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", opacity: loginLoading ? 0.7 : 1 }}>
+              {loginLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-          <p style={{ marginTop: '24px', fontSize: '12px', color: '#9CA3AF', textAlign: 'center' }}>Demo password: celeste2024</p>
         </div>
       </div>
     )
@@ -329,7 +336,7 @@ export default function AdminPage() {
           <button onClick={fetchData} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer' }}>
             <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Refresh
           </button>
-          <button onClick={() => setAuthed(false)} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#6B7280', background: 'none', border: 'none', cursor: 'pointer' }}>
             <LogOut size={14} /> Sign Out
           </button>
         </div>
@@ -419,17 +426,17 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Availability — compact filtered view */}
+        {/* Availability */}
         {activeTab === 'rooms' && (() => {
           const now = new Date()
           const room = localRooms.find(r => r.id === filterRoom)!
           const confirmedForRoom = bookings.filter(b => b.room_id === filterRoom && b.status === 'confirmed')
-          const today = new Date(); today.setHours(0,0,0,0)
+          const today = new Date(); today.setHours(0, 0, 0, 0)
 
           function bookedUnitsOnDate(date: Date) {
             return confirmedForRoom.filter(b => {
-              const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
-              const co = new Date(b.check_out); co.setHours(0,0,0,0)
+              const ci = new Date(b.check_in); ci.setHours(0, 0, 0, 0)
+              const co = new Date(b.check_out); co.setHours(0, 0, 0, 0)
               return date >= ci && date < co
             }).length
           }
@@ -455,10 +462,10 @@ export default function AdminPage() {
             .slice(0, 5)
 
           return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px', alignItems: 'start' }}>
+            // responsive: stack on mobile
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', alignItems: 'start' }}>
               {/* Calendar panel */}
               <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '8px', overflow: 'hidden' }}>
-                {/* Filters row */}
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #F3F4F6', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <select value={filterRoom} onChange={e => setFilterRoom(e.target.value)}
                     style={{ padding: '7px 10px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '13px', color: '#111827', background: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", flex: 1, minWidth: '140px' }}>
@@ -480,19 +487,17 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Room info strip */}
                 <div style={{ padding: '12px 20px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', gap: '12px', background: '#FAFAFA' }}>
-                  <img src={room.images[0]} alt={room.name} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px' }} />
+                  <Image src={room.images[0]} alt={room.name} width={36} height={36} style={{ objectFit: 'cover', borderRadius: '4px' }} />
                   <div>
                     <p style={{ fontSize: '13px', fontWeight: 600, color: '#111827', margin: 0 }}>{room.name}</p>
                     <p style={{ fontSize: '11px', color: '#9CA3AF', margin: 0 }}>{room.total_units} unit{room.total_units > 1 ? 's' : ''} · €{room.price_per_night}/night · max {room.capacity} guests</p>
                   </div>
                 </div>
 
-                {/* Calendar */}
                 <div style={{ padding: '20px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '4px' }}>
-                    {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
                       <div key={d} style={{ textAlign: 'center', fontSize: '11px', color: '#9CA3AF', padding: '4px 0', letterSpacing: '0.04em' }}>{d}</div>
                     ))}
                   </div>
@@ -512,8 +517,7 @@ export default function AdminPage() {
                     })}
                   </div>
 
-                  {/* Legend */}
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F3F4F6' }}>
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F3F4F6', flexWrap: 'wrap' }}>
                     {[
                       { bg: '#F0FDF4', color: '#15803D', label: 'Available' },
                       { bg: '#FEF3C7', color: '#92400E', label: 'Partial' },
@@ -617,11 +621,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=DM+Sans:wght@300;400;500;600&display=swap');
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   )
 }

@@ -27,7 +27,7 @@ export const rooms = [
     price_per_night: 395,
     capacity: 2,
     size_sqm: 36,
-    total_units: 3,
+    total_units: 4,
     short_description: 'Nestled into the treeline on the lodge\'s quieter north face. For those who came to disappear.',
     description: 'The Forêt room sits lower in the building, tucked against the fir trees that predate the lodge itself. Afternoon light filters green through the branches. The palette is darker here — aged walnut, deep moss linen, a ceiling of untreated stone. The bath is a Japanese soaking tub positioned at the window, deliberately framed by the canopy outside. Guests in this room request returns at a higher rate than any other.',
     amenities: ['King bed', 'Forest view', 'Japanese soaking tub', 'Fireplace', 'Writing desk', 'Espresso machine', 'Heated floors', 'Complimentary minibar'],
